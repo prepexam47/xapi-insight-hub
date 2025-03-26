@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ExtendedUser } from '@/types/user';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ const Login = () => {
     
     try {
       await login(email, password);
-      const user = await getCurrentUser();
+      const user = await getCurrentUser() as ExtendedUser;
       
       toast({
         title: 'Login successful',

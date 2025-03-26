@@ -1,5 +1,5 @@
-
 import { Account, Client, Databases, Storage, ID, Query } from 'appwrite';
+import { ExtendedUser } from '@/types/user';
 
 // Initialize the Appwrite client
 export const client = new Client();
@@ -74,7 +74,7 @@ export const logout = async () => {
   }
 };
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = async (): Promise<ExtendedUser | null> => {
   try {
     const user = await account.get();
     
