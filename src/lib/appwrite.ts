@@ -120,7 +120,7 @@ export const getUserRole = async (userId: string) => {
   }
 };
 
-// Helper functions for content management
+// Updated helper functions for content management
 export const uploadContent = async (file: File) => {
   try {
     // Upload the zip file to storage
@@ -134,11 +134,17 @@ export const uploadContent = async (file: File) => {
       {
         name: file.name,
         fileId: fileUpload.$id,
+        bucketId: BUCKET_ID,
         size: file.size,
         uploadedAt: new Date().toISOString(),
-        status: 'processing'
+        status: 'ready', // Changed from 'processing' to 'ready'
+        contentType: 'xapi'
       }
     );
+    
+    // Here we would typically have a server-side function to extract the ZIP
+    // This would be handled by a function or webhook in a production environment
+    // For this example, we'll assume the content is accessible through the Appwrite storage URL
     
     return contentDoc;
   } catch (error) {
