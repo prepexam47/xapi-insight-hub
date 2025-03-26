@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, getXAPIStatements } from '@/lib/appwrite';
@@ -34,8 +35,10 @@ import {
   ChevronRight, 
   Download, 
   Loader2, 
-  UserX 
+  UserX,
+  AlertCircle 
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const generateMockData = () => {
   const quizResultsData = [
@@ -97,9 +100,11 @@ const Reports = () => {
   const [user, setUser] = useState<any>(null);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [quizCompleted, setQuizCompleted] = useState(false);
   const [searchParams] = useSearchParams();
   const contentId = searchParams.get('contentId');
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -110,7 +115,20 @@ const Reports = () => {
           return;
         }
         setUser(currentUser);
-        fetchReportData();
+        
+        // Check if quiz is completed
+        const savedQuizStatus = localStorage.getItem('quizCompletionStatus');
+        if (savedQuizStatus && contentId) {
+          const quizStatus = JSON.parse(savedQuizStatus);
+          if (quizStatus[contentId]) {
+            setQuizCompleted(true);
+            fetchReportData();
+          } else {
+            setLoading(false);
+          }
+        } else {
+          setLoading(false);
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
         navigate('/login');
@@ -148,6 +166,40 @@ const Reports = () => {
   const ACTIVE_COLOR = '#3b82f6';
   const PASSIVE_COLOR = '#94a3b8';
 
+  if (!quizCompleted && contentId) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-6 md:px-10 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/content')}
+              className="mb-2 -ml-2 text-muted-foreground"
+            >
+              <ArrowLeft size={16} className="mr-2" />
+              Back to Content
+            </Button>
+            <h1 className="text-3xl font-bold mb-2 animate-fade-in">Content Report</h1>
+          </div>
+        </div>
+        
+        <Card className="animate-fade-in">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle size={48} className="text-amber-500 mb-4" />
+            <h3 className="text-xl font-medium mb-2">Quiz Not Completed</h3>
+            <p className="text-muted-foreground text-center max-w-md mb-6">
+              You need to complete the quiz for this content before you can view the detailed reports.
+            </p>
+            <Button onClick={() => navigate('/content')}>
+              Return to Content
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-24 pb-16 px-6 md:px-10 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -155,11 +207,11 @@ const Reports = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/content')}
             className="mb-2 -ml-2 text-muted-foreground"
           >
             <ArrowLeft size={16} className="mr-2" />
-            Back to Dashboard
+            Back to Content
           </Button>
           <h1 className="text-3xl font-bold mb-2 animate-fade-in">Content Report</h1>
           {!loading && data && (
@@ -188,8 +240,8 @@ const Reports = () => {
             <p className="text-muted-foreground text-center max-w-md mb-6">
               There is no report data available for this content. This might be because no users have interacted with it yet.
             </p>
-            <Button onClick={() => navigate('/dashboard')}>
-              Return to Dashboard
+            <Button onClick={() => navigate('/content')}>
+              Return to Content
             </Button>
           </CardContent>
         </Card>
@@ -507,4 +559,3 @@ const Reports = () => {
 };
 
 export default Reports;
-

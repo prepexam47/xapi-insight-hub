@@ -190,3 +190,66 @@ export const getXAPIStatements = async (filters = {}) => {
     throw error;
   }
 };
+
+// Function to store quiz completion
+export const storeQuizCompletion = async (contentId: string, userId: string, score: number) => {
+  try {
+    const completionRecord = await databases.createDocument(
+      DB_ID,
+      'quiz_completions', // You would need to create this collection
+      ID.unique(),
+      {
+        contentId,
+        userId,
+        score,
+        completedAt: new Date().toISOString()
+      }
+    );
+    
+    // Update the status of the content for this user
+    const statement = {
+      actor: {
+        name: userId,
+      },
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/completed',
+        display: { 'en-US': 'completed' }
+      },
+      object: {
+        id: contentId,
+      },
+      result: {
+        score: {
+          scaled: score / 100
+        },
+        completion: true
+      }
+    };
+    
+    await storeXAPIStatement(statement);
+    
+    return completionRecord;
+  } catch (error) {
+    console.error('Error storing quiz completion:', error);
+    throw error;
+  }
+};
+
+// Function to check if a user has completed a quiz
+export const checkQuizCompletion = async (contentId: string, userId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      DB_ID,
+      'quiz_completions',
+      [
+        Query.equal('contentId', contentId),
+        Query.equal('userId', userId)
+      ]
+    );
+    
+    return response.documents.length > 0;
+  } catch (error) {
+    console.error('Error checking quiz completion:', error);
+    return false;
+  }
+};

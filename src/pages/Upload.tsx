@@ -103,7 +103,7 @@ const UploadPage = () => {
       
       toast({
         title: 'Upload successful',
-        description: 'Your xAPI content has been uploaded',
+        description: 'Your xAPI content has been uploaded and is now available for learners to access',
       });
       
       setTimeout(() => {
@@ -138,7 +138,7 @@ const UploadPage = () => {
     <div className="min-h-screen pt-24 pb-16 px-6 md:px-10 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-2 animate-fade-in">Upload xAPI Content</h1>
       <p className="text-muted-foreground mb-8 animate-fade-in">
-        Upload your xAPI content package (ZIP file) to analyze learning data
+        Upload your xAPI content package (ZIP file) for learners to access and track progress
       </p>
 
       {error && (
@@ -268,7 +268,7 @@ const UploadPage = () => {
         <CardHeader>
           <CardTitle>What happens after upload?</CardTitle>
           <CardDescription>
-            Your content will be processed and made available for analysis
+            Your content will be processed and made available for learners
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -290,9 +290,9 @@ const UploadPage = () => {
                 <span className="font-medium">2</span>
               </div>
               <div>
-                <h4 className="font-medium">Data Preparation</h4>
+                <h4 className="font-medium">Learner Access</h4>
                 <p className="text-muted-foreground text-sm">
-                  The system organizes the content structure and prepares it for tracking
+                  Learners can immediately access and interact with the content
                 </p>
               </div>
             </div>
@@ -302,9 +302,9 @@ const UploadPage = () => {
                 <span className="font-medium">3</span>
               </div>
               <div>
-                <h4 className="font-medium">Ready for Use</h4>
+                <h4 className="font-medium">Quiz Completion & Reports</h4>
                 <p className="text-muted-foreground text-sm">
-                  Your content will appear in your dashboard for tracking and analytics
+                  After learners complete quizzes, detailed reports will be available
                 </p>
               </div>
             </div>

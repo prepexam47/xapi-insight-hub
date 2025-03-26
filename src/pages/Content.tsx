@@ -5,13 +5,18 @@ import { getCurrentUser, getContentList } from '@/lib/appwrite';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, FileArchive, Play, BarChart } from 'lucide-react';
+import { Loader2, FileArchive, Play, BarChart, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const Content = () => {
   const [user, setUser] = useState<any>(null);
   const [content, setContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState<Record<string, boolean>>({});
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -33,6 +38,14 @@ const Content = () => {
 
     checkAuth();
   }, [navigate]);
+
+  useEffect(() => {
+    // Load quiz completion status from localStorage
+    const savedQuizStatus = localStorage.getItem('quizCompletionStatus');
+    if (savedQuizStatus) {
+      setQuizCompleted(JSON.parse(savedQuizStatus));
+    }
+  }, []);
 
   const fetchContent = async () => {
     setLoading(true);
@@ -59,15 +72,38 @@ const Content = () => {
     }
   };
 
-  const handleLaunchContent = (id: string) => {
-    // In a real app, this would launch the xAPI content
+  const handleLaunchContent = (contentItem: any) => {
+    setSelectedContent(contentItem);
+    setContentDialogOpen(true);
+  };
+
+  const completeQuiz = (contentId: string) => {
+    const updatedQuizStatus = { ...quizCompleted, [contentId]: true };
+    setQuizCompleted(updatedQuizStatus);
+    
+    // Save to localStorage
+    localStorage.setItem('quizCompletionStatus', JSON.stringify(updatedQuizStatus));
+    
     toast({
-      title: 'Launching content',
-      description: 'Content viewer would open here'
+      title: 'Quiz completed',
+      description: 'Your responses have been recorded and reports are now available',
     });
+    
+    // Close the content dialog
+    setContentDialogOpen(false);
   };
 
   const handleViewReports = (id: string) => {
+    // Only allow viewing reports if quiz is completed
+    if (!quizCompleted[id]) {
+      toast({
+        variant: 'destructive',
+        title: 'Report not available',
+        description: 'You need to complete the quiz before viewing reports'
+      });
+      return;
+    }
+    
     navigate(`/reports?contentId=${id}`);
   };
 
@@ -131,18 +167,30 @@ const Content = () => {
                               ></div>
                             </div>
                           </div>
+                          {quizCompleted[item.$id] && (
+                            <div className="mt-2 bg-green-50 text-green-700 rounded p-1.5 text-xs flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Quiz completed
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                       <CardFooter className="flex justify-between">
                         <Button 
                           variant="outline"
                           onClick={() => handleViewReports(item.$id)}
+                          disabled={!quizCompleted[item.$id]}
                         >
                           <BarChart className="mr-2 h-4 w-4" />
                           View Report
+                          {!quizCompleted[item.$id] && (
+                            <AlertCircle className="ml-2 h-4 w-4 text-muted-foreground" />
+                          )}
                         </Button>
                         <Button 
-                          onClick={() => handleLaunchContent(item.$id)}
+                          onClick={() => handleLaunchContent(item)}
                         >
                           <Play className="mr-2 h-4 w-4" />
                           Launch
@@ -172,6 +220,77 @@ const Content = () => {
           </Tabs>
         </div>
       )}
+
+      {/* Content Viewer Dialog */}
+      <Dialog open={contentDialogOpen} onOpenChange={setContentDialogOpen}>
+        <DialogContent className="max-w-5xl h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{selectedContent?.name}</DialogTitle>
+            <DialogDescription>
+              Interactive learning content
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 flex flex-col overflow-hidden border rounded-md">
+            {/* Content viewer would be here - this is a placeholder */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">Module Introduction</h2>
+                <p className="mb-4">This is where the actual content from the xAPI package would be displayed. The content would typically include text, images, videos, and interactive elements.</p>
+                <p className="mb-4">Users would navigate through the content and eventually reach the quiz section where they would be tested on the material.</p>
+              </div>
+              
+              {/* Sample Quiz */}
+              <div className="border p-6 rounded-md bg-gray-50">
+                <h3 className="text-xl font-bold mb-4">Quiz</h3>
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <p className="font-medium">1. What is the primary purpose of xAPI?</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <input type="radio" id="q1a" name="q1" className="mr-2" />
+                        <label htmlFor="q1a">To create visual presentations</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input type="radio" id="q1b" name="q1" className="mr-2" />
+                        <label htmlFor="q1b">To track learning experiences</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input type="radio" id="q1c" name="q1" className="mr-2" />
+                        <label htmlFor="q1c">To design user interfaces</label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="font-medium">2. What does a statement in xAPI consist of?</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <input type="radio" id="q2a" name="q2" className="mr-2" />
+                        <label htmlFor="q2a">Actor, verb, object</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input type="radio" id="q2b" name="q2" className="mr-2" />
+                        <label htmlFor="q2b">Subject, predicate, object</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input type="radio" id="q2c" name="q2" className="mr-2" />
+                        <label htmlFor="q2c">User, action, result</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t flex justify-end bg-gray-50">
+              <Button onClick={() => completeQuiz(selectedContent?.$id)}>
+                Submit Quiz & Generate Report
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
