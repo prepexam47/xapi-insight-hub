@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getContentList, getCurrentUser } from '@/lib/appwrite';
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ContentCard from '@/components/ContentCard';
 import { Button } from '@/components/ui/button';
-import { BarChart, Grid2X2, List, Loader2, Plus, Users } from 'lucide-react';
+import { BarChart, Grid2X2, List, Loader2, Plus, Users, FileArchive } from 'lucide-react';
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
@@ -40,7 +39,6 @@ const Dashboard = () => {
     try {
       const contentList = await getContentList();
       
-      // Add some demo data for visualization
       const enhancedContent = contentList.map((item: any) => ({
         ...item,
         completionRate: Math.floor(Math.random() * 100),
@@ -59,7 +57,6 @@ const Dashboard = () => {
     navigate(`/reports?contentId=${id}`);
   };
 
-  // Mock data for charts
   const completionData = [
     { name: 'Module 1', completion: 78 },
     { name: 'Module 2', completion: 65 },
@@ -75,7 +72,6 @@ const Dashboard = () => {
     { name: 'Quiz 4', score: 68 },
   ];
 
-  // Stats calculations
   const totalContent = content.length;
   const avgCompletion = content.length > 0 
     ? Math.round(content.reduce((sum, item) => sum + item.completionRate, 0) / content.length) 
@@ -106,7 +102,6 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-up">
             <Card>
               <CardHeader className="pb-2">
@@ -157,7 +152,6 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Charts */}
           <Tabs defaultValue="completion" className="animate-slide-up">
             <TabsList>
               <TabsTrigger value="completion">Completion Rates</TabsTrigger>
@@ -241,7 +235,6 @@ const Dashboard = () => {
             </TabsContent>
           </Tabs>
 
-          {/* Content List */}
           <div className="animate-slide-up">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Your Content</h2>
@@ -268,7 +261,7 @@ const Dashboard = () => {
             {content.length === 0 ? (
               <div className="text-center py-12 content-card">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileUp className="text-primary" size={24} />
+                  <FileArchive className="text-primary" size={24} />
                 </div>
                 <h3 className="text-lg font-medium mb-2">No content yet</h3>
                 <p className="text-muted-foreground mb-4">
@@ -300,7 +293,7 @@ const Dashboard = () => {
                   <Card key={item.$id} className="animate-scale-in">
                     <div className="flex items-center p-4">
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mr-4">
-                        <FileUp className="text-primary" size={20} />
+                        <FileArchive className="text-primary" size={20} />
                       </div>
                       <div className="flex-grow">
                         <h3 className="font-medium">{item.name}</h3>

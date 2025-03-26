@@ -1,9 +1,9 @@
 
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { getCurrentUser, logout } from '@/lib/appwrite';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getCurrentUser, logout, ROLE_ADMIN } from '@/lib/appwrite';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Menu, User, X } from 'lucide-react';
+import { ChevronDown, Menu, User, X, LogIn, UserPlus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -30,24 +31,40 @@ const Navbar = () => {
     };
 
     checkUser();
-  }, []);
+  }, [location.pathname]); // Re-check when the route changes
 
   const handleLogout = async () => {
     try {
       await logout();
       setUser(null);
-      window.location.href = '/';
+      navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
-  const navLinks = [
-    { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Upload', path: '/upload' },
-    { name: 'Reports', path: '/reports' },
-  ];
+  // Dynamic navigation links based on user role
+  const getNavLinks = () => {
+    if (!user) {
+      return [];
+    }
+    
+    if (user.role === ROLE_ADMIN) {
+      return [
+        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Upload', path: '/upload' },
+        { name: 'Content', path: '/content' },
+        { name: 'Reports', path: '/reports' },
+      ];
+    } else {
+      return [
+        { name: 'Content', path: '/content' },
+        { name: 'Reports', path: '/reports' },
+      ];
+    }
+  };
 
+  const navLinks = getNavLinks();
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -102,10 +119,16 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center space-x-4">
               <Link to="/login">
-                <Button variant="ghost">Log in</Button>
+                <Button variant="ghost" className="flex items-center space-x-2">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Log in
+                </Button>
               </Link>
               <Link to="/signup">
-                <Button>Sign up</Button>
+                <Button className="flex items-center space-x-2">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Sign up
+                </Button>
               </Link>
             </div>
           )}
@@ -156,10 +179,16 @@ const Navbar = () => {
                 ) : (
                   <div className="flex flex-col space-y-4">
                     <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">Log in</Button>
+                      <Button variant="outline" className="w-full">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Log in
+                      </Button>
                     </Link>
                     <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full">Sign up</Button>
+                      <Button className="w-full">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign up
+                      </Button>
                     </Link>
                   </div>
                 )}

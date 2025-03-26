@@ -1,5 +1,5 @@
 
-import { Account, Client, Databases, Storage } from 'appwrite';
+import { Account, Client, Databases, Storage, ID, Query } from 'appwrite';
 
 // Initialize the Appwrite client
 export const client = new Client();
@@ -17,15 +17,38 @@ export const storage = new Storage(client);
 export const DB_ID = 'xapi_database';
 export const CONTENT_COLLECTION_ID = 'content';
 export const STATEMENTS_COLLECTION_ID = 'statements';
+export const USERS_COLLECTION_ID = 'users';
 
 // Storage bucket ID
 export const BUCKET_ID = 'xapi_content';
 
+// User roles
+export const ROLE_ADMIN = 'admin';
+export const ROLE_USER = 'user';
+
 // Helper functions for authentication
-export const createUser = async (email: string, password: string, name: string) => {
+export const createUser = async (email: string, password: string, name: string, role = ROLE_USER) => {
   try {
-    const user = await account.create('unique()', email, password, name);
+    // Create the user account
+    const user = await account.create(ID.unique(), email, password, name);
+    
+    // Create a session
     await account.createEmailSession(email, password);
+    
+    // Store additional user data with role in the database
+    await databases.createDocument(
+      DB_ID,
+      USERS_COLLECTION_ID,
+      user.$id,
+      {
+        userId: user.$id,
+        name,
+        email,
+        role,
+        createdAt: new Date().toISOString()
+      }
+    );
+    
     return user;
   } catch (error) {
     console.error('Error creating user:', error);
@@ -53,10 +76,47 @@ export const logout = async () => {
 
 export const getCurrentUser = async () => {
   try {
-    return await account.get();
+    const user = await account.get();
+    
+    // Fetch the user's role from the database
+    const userData = await databases.listDocuments(
+      DB_ID,
+      USERS_COLLECTION_ID,
+      [Query.equal('userId', user.$id)]
+    );
+    
+    if (userData.documents.length > 0) {
+      // Combine Appwrite user data with our custom user data
+      return {
+        ...user,
+        role: userData.documents[0].role,
+        userDetails: userData.documents[0]
+      };
+    }
+    
+    return user;
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
+  }
+};
+
+export const getUserRole = async (userId: string) => {
+  try {
+    const userData = await databases.listDocuments(
+      DB_ID,
+      USERS_COLLECTION_ID,
+      [Query.equal('userId', userId)]
+    );
+    
+    if (userData.documents.length > 0) {
+      return userData.documents[0].role;
+    }
+    
+    return ROLE_USER; // Default role
+  } catch (error) {
+    console.error('Error getting user role:', error);
+    return ROLE_USER; // Default role on error
   }
 };
 
@@ -64,13 +124,13 @@ export const getCurrentUser = async () => {
 export const uploadContent = async (file: File) => {
   try {
     // Upload the zip file to storage
-    const fileUpload = await storage.createFile(BUCKET_ID, 'unique()', file);
+    const fileUpload = await storage.createFile(BUCKET_ID, ID.unique(), file);
     
     // Create a document in the database to track the content
     const contentDoc = await databases.createDocument(
       DB_ID,
       CONTENT_COLLECTION_ID,
-      'unique()',
+      ID.unique(),
       {
         name: file.name,
         fileId: fileUpload.$id,
@@ -104,7 +164,7 @@ export const storeXAPIStatement = async (statement: any) => {
     return await databases.createDocument(
       DB_ID,
       STATEMENTS_COLLECTION_ID,
-      'unique()',
+      ID.unique(),
       {
         statement: JSON.stringify(statement),
         verb: statement.verb?.id || '',

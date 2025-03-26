@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser, getXAPIStatements } from '@/lib/appwrite';
@@ -12,9 +11,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
-  BarChart, 
-  Line, 
-  Area, 
+  BarChart as RechartsBarChart, 
+  LineChart,
+  AreaChart,
+  Bar as RechartsBar,
+  Line,
+  Area,
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -35,9 +37,7 @@ import {
   UserX 
 } from 'lucide-react';
 
-// Mock data for reports
 const generateMockData = () => {
-  // Quiz results data
   const quizResultsData = [
     { question: 'Question 1', correct: 68, incorrect: 32 },
     { question: 'Question 2', correct: 74, incorrect: 26 },
@@ -46,7 +46,6 @@ const generateMockData = () => {
     { question: 'Question 5', correct: 63, incorrect: 37 },
   ];
 
-  // Completion progress over time
   const daysAgo = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() - days);
@@ -63,7 +62,6 @@ const generateMockData = () => {
     { date: daysAgo(0), completion: 85 },
   ];
 
-  // Time spent by section
   const timeSpentData = [
     { name: 'Introduction', value: 12 },
     { name: 'Module 1', value: 25 },
@@ -72,7 +70,6 @@ const generateMockData = () => {
     { name: 'Assessment', value: 15 }
   ];
 
-  // User engagement data
   const engagementData = [
     { date: daysAgo(6), active: 15, passive: 5 },
     { date: daysAgo(5), active: 18, passive: 8 },
@@ -127,10 +124,7 @@ const Reports = () => {
     setLoading(true);
     try {
       if (contentId) {
-        // In a real app, we would fetch statements related to this content
         await getXAPIStatements();
-        
-        // For now, we'll use mock data
         setTimeout(() => {
           setData(generateMockData());
           setLoading(false);
@@ -145,11 +139,9 @@ const Reports = () => {
   };
 
   const downloadReport = () => {
-    // In a real app, we would generate a proper report
     alert('Report download functionality would be implemented here');
   };
 
-  // Colors for charts
   const COLORS = ['#3b82f6', '#93c5fd', '#60a5fa', '#2563eb', '#1d4ed8'];
   const CORRECT_COLOR = '#16a34a';
   const INCORRECT_COLOR = '#ef4444';
@@ -203,7 +195,6 @@ const Reports = () => {
         </Card>
       ) : (
         <div className="space-y-8">
-          {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-up">
             <Card>
               <CardHeader className="pb-2">
@@ -254,7 +245,6 @@ const Reports = () => {
             </Card>
           </div>
 
-          {/* Charts and Reports */}
           <Tabs defaultValue="quiz" className="animate-slide-up">
             <TabsList className="mb-4">
               <TabsTrigger value="quiz">Quiz Results</TabsTrigger>
@@ -263,7 +253,6 @@ const Reports = () => {
               <TabsTrigger value="engagement">User Engagement</TabsTrigger>
             </TabsList>
             
-            {/* Quiz Results Tab */}
             <TabsContent value="quiz" className="pt-2">
               <Card>
                 <CardHeader>
@@ -275,7 +264,7 @@ const Reports = () => {
                 <CardContent>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
+                      <RechartsBarChart
                         data={data.quizResultsData}
                         margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                         barGap={0}
@@ -293,16 +282,15 @@ const Reports = () => {
                           }}
                         />
                         <Legend />
-                        <Bar dataKey="correct" name="Correct" fill={CORRECT_COLOR} radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="incorrect" name="Incorrect" fill={INCORRECT_COLOR} radius={[4, 4, 0, 0]} />
-                      </BarChart>
+                        <RechartsBar dataKey="correct" name="Correct" fill={CORRECT_COLOR} radius={[4, 4, 0, 0]} />
+                        <RechartsBar dataKey="incorrect" name="Incorrect" fill={INCORRECT_COLOR} radius={[4, 4, 0, 0]} />
+                      </RechartsBarChart>
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
             
-            {/* Completion Trends Tab */}
             <TabsContent value="completion" className="pt-2">
               <Card>
                 <CardHeader>
@@ -349,7 +337,6 @@ const Reports = () => {
               </Card>
             </TabsContent>
             
-            {/* Time Analysis Tab */}
             <TabsContent value="time" className="pt-2">
               <Card>
                 <CardHeader>
@@ -393,7 +380,6 @@ const Reports = () => {
               </Card>
             </TabsContent>
             
-            {/* User Engagement Tab */}
             <TabsContent value="engagement" className="pt-2">
               <Card>
                 <CardHeader>
@@ -448,7 +434,6 @@ const Reports = () => {
             </TabsContent>
           </Tabs>
 
-          {/* User Progress Section */}
           <Card className="animate-slide-up">
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -522,3 +507,4 @@ const Reports = () => {
 };
 
 export default Reports;
+
