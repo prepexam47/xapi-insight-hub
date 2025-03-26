@@ -1,4 +1,4 @@
-import { Account, Client, Databases, Storage, ID, Query } from 'appwrite';
+import { Account, Client, Databases, Storage, ID, Query, Models } from 'appwrite';
 import { ExtendedUser } from '@/types/user';
 
 // Initialize the Appwrite client
@@ -76,7 +76,7 @@ export const logout = async () => {
 
 export const getCurrentUser = async (): Promise<ExtendedUser | null> => {
   try {
-    const user = await account.get();
+    const user = await account.get() as Models.User<Models.Preferences>;
     
     // Fetch the user's role from the database
     const userData = await databases.listDocuments(
@@ -94,7 +94,7 @@ export const getCurrentUser = async (): Promise<ExtendedUser | null> => {
       };
     }
     
-    return user;
+    return user as ExtendedUser;
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;

@@ -31,7 +31,7 @@ const Login = () => {
       
       toast({
         title: 'Login successful',
-        description: `Welcome back, ${user?.name}!`
+        description: `Welcome back${user?.$id ? `, ${user.name || ''}` : ''}!`
       });
       
       // Redirect based on role
