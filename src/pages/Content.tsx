@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, getContentList } from '@/lib/appwrite';
@@ -216,5 +217,25 @@ const Content = () => {
         </div>
       )}
 
-      <
+      <Dialog open={contentDialogOpen} onOpenChange={setContentDialogOpen}>
+        <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{selectedContent?.name}</DialogTitle>
+            <DialogDescription>
+              Complete the content to unlock the report
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedContent && (
+            <ContentViewer 
+              content={selectedContent}
+              onQuizComplete={completeQuiz}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
 
+export default Content;
