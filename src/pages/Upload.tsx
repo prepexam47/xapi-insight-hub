@@ -1,14 +1,13 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, uploadContent } from '@/lib/appwrite';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Upload, AlertCircle, CheckCircle, FileArchive, X } from 'lucide-react';
+import { Loader2, UploadIcon, AlertCircle, CheckCircle, FileArchive, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const Upload = () => {
+const UploadPage = () => {
   const [user, setUser] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -39,7 +38,6 @@ const Upload = () => {
     checkAuth();
   }, [navigate]);
 
-  // Simulated progress for better UX
   useEffect(() => {
     if (uploading && uploadProgress < 95) {
       const timer = setTimeout(() => {
@@ -77,7 +75,6 @@ const Upload = () => {
   };
 
   const handleFile = (file: File) => {
-    // Validate file is a zip
     if (file.type !== 'application/zip' && !file.name.endsWith('.zip')) {
       setError('Please upload a valid ZIP file containing xAPI content');
       toast({
@@ -109,7 +106,6 @@ const Upload = () => {
         description: 'Your xAPI content has been uploaded',
       });
       
-      // Reset after success
       setTimeout(() => {
         setFile(null);
         setUploading(false);
@@ -181,7 +177,7 @@ const Upload = () => {
               />
               <div className="flex flex-col items-center justify-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Upload className="h-8 w-8 text-primary" />
+                  <UploadIcon className="h-8 w-8 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-lg font-medium">Drag and drop your file here</h3>
@@ -319,4 +315,4 @@ const Upload = () => {
   );
 };
 
-export default Upload;
+export default UploadPage;
